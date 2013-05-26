@@ -4,6 +4,7 @@ CONFIG += qmltestcase
 CONFIG += console
 SOURCES += tst_qmltest.cpp
 
+QT += quick
 
 importFiles.files = borderimage  buttonclick  createbenchmark  events  qqmlbinding selftests
 
