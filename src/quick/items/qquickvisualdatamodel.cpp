@@ -817,7 +817,8 @@ void QQuickVisualDataModelPrivate::incubatorStatusChanged(QVDMIncubationTask *in
         delete cacheItem->object;
         cacheItem->object = 0;
         cacheItem->scriptRef -= 1;
-        cacheItem->contextData->destroy();
+        if (cacheItem->contextData)
+            cacheItem->contextData->destroy();
         cacheItem->contextData = 0;
         if (!cacheItem->isReferenced()) {
             removeCacheItem(cacheItem);
