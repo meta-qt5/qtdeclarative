@@ -65,6 +65,10 @@
 #include <QHash>
 #endif
 
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+
 QT_BEGIN_NAMESPACE
 
 inline static bool isPowerOfTwo(int x)
@@ -523,7 +527,6 @@ QSGPlainTexture::~QSGPlainTexture()
         glDeleteTextures(1, &m_texture_id);
 }
 
-#ifdef QT_OPENGL_ES
 void qsg_swizzleBGRAToRGBA(QImage *image)
 {
     const int width = image->width();
@@ -534,7 +537,6 @@ void qsg_swizzleBGRAToRGBA(QImage *image)
             p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
     }
 }
-#endif
 
 void QSGPlainTexture::setImage(const QImage &image)
 {
@@ -621,12 +623,26 @@ void QSGPlainTexture::bind()
 
     updateBindOptions(m_dirty_bind_options);
 
+    GLenum externalFormat = GL_RGBA;
+    GLenum internalFormat = GL_RGBA;
+
+    const char *extensions = (const char *) glGetString(GL_EXTENSIONS);
+    if (strstr(extensions, "GL_EXT_bgra")) {
+        externalFormat = GL_BGRA;
 #ifdef QT_OPENGL_ES
-        qsg_swizzleBGRAToRGBA(&tmp);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tmp.constBits());
-#else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, tmp.constBits());
+        internalFormat = GL_BGRA;
 #endif
+    } else if (strstr(extensions, "GL_APPLE_texture_format_BGRA8888")) {
+        externalFormat = GL_BGRA;
+    } else if (strstr(extensions, "GL_EXT_texture_format_BGRA8888")
+               || strstr(extensions, "GL_IMG_texture_format_BGRA8888")) {
+        externalFormat = GL_BGRA;
+        internalFormat = GL_BGRA;
+    } else {
+        qsg_swizzleBGRAToRGBA(&tmp);
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h, 0, externalFormat, GL_UNSIGNED_BYTE, tmp.constBits());
 
     if (m_has_mipmaps) {
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
