@@ -44,6 +44,7 @@
 #include <QWidget>
 #include <QQuickWidget>
 #include <QQuickView>
+#include <QCoreApplication>
 
 QT_FORWARD_DECLARE_CLASS(QRadioButton)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
