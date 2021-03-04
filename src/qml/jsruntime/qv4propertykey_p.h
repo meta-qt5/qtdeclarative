@@ -50,6 +50,7 @@
 // We mean it.
 //
 
+#include <limits>
 #include <private/qv4global_p.h>
 
 QT_BEGIN_NAMESPACE
